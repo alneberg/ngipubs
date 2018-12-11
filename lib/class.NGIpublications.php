@@ -14,7 +14,7 @@ class NGIpublications {
 		return $add;
 	}
 
-	public function updatePubStatus($publication_id,$status,$user,$comment) {
+	public function updatePubStatus($publication_id,$status,$user) {
 		global $DB;
 		if($publication_id=filter_var($publication_id, FILTER_VALIDATE_INT)) {
 			if($check=sql_fetch("SELECT * FROM publications WHERE id='$publication_id' LIMIT 1")) {
@@ -23,12 +23,26 @@ class NGIpublications {
 					if($status=='maybe') {
 						$reset=sql_query("UPDATE publications SET reservation_user=NULL, reservation_timestamp=NULL WHERE id='$publication_id'");
 					}
-					$this->addLog($publication_id,$status,$comment,'status_updated');
+					$this->addLog($publication_id,$status,"Status updated to '$status'",'status_updated');
 
 					return TRUE;
 				} else {
 					return FALSE;
 				}
+			} else {
+				return FALSE;
+			}
+		} else {
+			return FALSE;
+		}
+	}
+
+	public function commentPublication($publication_id,$user,$comment) {
+		global $DB;
+		if($publication_id=filter_var($publication_id, FILTER_VALIDATE_INT)) {
+			if($check=sql_fetch("SELECT * FROM publications WHERE id='$publication_id' LIMIT 1")) {
+				$this->addLog($publication_id,'',$comment,'comment');
+				return TRUE;
 			} else {
 				return FALSE;
 			}
@@ -661,11 +675,17 @@ class NGIpublications {
 			$tools_discard->set('id','discard-'.$publication['data']['id']);
 			$tools_discard->set('text','Discard');
 
-			$tools_comment=new htmlElement('input');
+			$tools_comment=new htmlElement('textarea');
 			$tools_comment->set('type', 'text');
 			$tools_comment->set('class', 'comment-input');
 			$tools_comment->set('id','comment-'.$publication['data']['id']);
+			$tools_comment->set('rows', "2");
 			$tools_comment->set('placeholder','Comment');
+
+			$tools_comment_btn=new htmlElement('span');
+			$tools_comment_btn->set('class','primary button tiny expanded comment_button');
+			$tools_comment_btn->set('id','comment-'.$publication['data']['id']);
+			$tools_comment_btn->set('text','Add Comment');
 
 			$main->inject($title);
 			$main->inject($ref);
@@ -676,6 +696,7 @@ class NGIpublications {
 			$tools->inject($tools_maybe);
 			$tools->inject($tools_discard);
 			$tools->inject($tools_comment);
+			$tools->inject($tools_comment_btn);
 
 			$row->inject($main);
 			$row->inject($tools);
