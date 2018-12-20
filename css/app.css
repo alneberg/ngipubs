@@ -24,3 +24,37 @@
 	margin-top: 15%;
 	margin-bottom: 5%;
 }
+
+.log_timestamp {
+	color: #a8a8a8;
+	font-size:90%
+}
+
+.log_user {
+	color: #000000;
+	font-size:90%;
+	font-weight: 500;
+}
+
+.log_comment {
+	color: #1a1a1a;
+}
+
+.fi-target {
+	color: #3adb76;
+	font-size: 140%;
+}
+
+.fi-puzzle {
+	color: #ffae00;
+	font-size: 140%;
+}
+
+.fi-prohibited {
+	color: #cc4b37;
+	font-size: 140%;
+}
+
+.log_item.status_updated {
+	font-size: 90%;
+}

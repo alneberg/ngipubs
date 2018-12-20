@@ -776,8 +776,83 @@ class NGIpublications {
 		return array('data' => array('total' => count($authors), 'matched' => $matched, 'added' => $added), 'errors' => $errors);
 	}
 
-
 	private function formatLog($log_list) {
+		$table=new htmlElement('div');
+		$table->set('class','log');
+
+		foreach($log_list as $entry) {
+			$log_div = new htmlElement('div');
+			$log_div->set('class', 'log_item '.$entry['type']);
+
+			$log_user=new htmlElement('span');
+			$log_user->set('class', 'log_user');
+			$user_name = substr($entry['user_email'], 0, strpos($entry['user_email'], "@"));
+			$user_name = str_replace("."," ",$user_name);
+			$user_name = ucwords($user_name);
+			$log_user->set('text', $user_name);
+
+			$log_timestamp=new htmlElement('span');
+			$log_timestamp->set('class', 'log_timestamp');
+			$log_timestamp->set('text', gmdate('Y-m-d H:i:s', $entry['timestamp']));
+
+ 			if ($entry['type'] == 'status_updated') {
+				$log_status_change = new htmlElement('span');
+				$log_status_icon = new htmlElement('i');
+				switch($entry['status_set']){
+					case 'verified':
+						$log_status_icon->set('class', "fi-target");
+					break;
+					case 'maybe':
+						$log_status_icon->set('class', "fi-puzzle");
+					break;
+					case 'discarded':
+						$log_status_icon->set('class', "fi-prohibited");
+					break;
+				}
+				$log_status_title = new htmlElement('span');
+				if ($entry['status_set'] == 'maybe') {
+					$log_status_title->set('text', $entry['status_set']." set by ");
+				} else {
+					$log_status_title->set('text', $entry['status_set']." by ");
+				}
+
+				$log_user_timestamp = new htmlElement('span');
+				$log_user_timestamp->inject($log_user);
+				$log_user_timestamp->inject($log_timestamp);
+
+				$log_status_change->inject($log_status_icon);
+				$log_status_change->inject($log_status_title);
+				$log_status_change->inject($log_user_timestamp);
+
+
+				$log_div->inject($log_status_change);
+			}
+
+			if (($entry['type'] == 'comment') or (($entry['type'] == 'status_updated') and ($entry['comment'] != ''))) {
+				$log_header = new htmlElement('div');
+
+				$log_header->inject($log_user);
+				$log_header->inject($log_timestamp);
+
+				$log_div->inject($log_header);
+
+				$log_comment=new htmlElement('span');
+				$log_comment->set('class', 'log_comment');
+				$log_comment->set('text', $entry['comment']);
+
+				$log_div->inject($log_comment);
+
+			}
+			$table->inject($log_div);
+		}
+
+
+		return $table->Output();
+
+	}
+
+
+	private function formatLog_old($log_list) {
 		$table=new htmlElement('table');
 		$table->set('class','log');
 		$table_head=new htmlElement('thead');
