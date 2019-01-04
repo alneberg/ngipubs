@@ -875,63 +875,6 @@ class NGIpublications {
 	}
 
 
-	private function formatLog_old($log_list) {
-		$table=new htmlElement('table');
-		$table->set('class','log');
-		$table_head=new htmlElement('thead');
-		$table_head_tr=new htmlElement('tr');
-
-		$table_head_th=new htmlElement('th');
-		$table_head_th->set('text', "User");
-		$table_head_tr->inject($table_head_th);
-
-		$table_head_th=new htmlElement('th');
-		$table_head_th->set('text', "Comment");
-		$table_head_tr->inject($table_head_th);
-
-		$table_head_th=new htmlElement('th');
-		$table_head_th->set('text', "Type");
-		$table_head_tr->inject($table_head_th);
-
-		$table_head_th=new htmlElement('th');
-		$table_head_th->set('text', "Status set");
-		$table_head_tr->inject($table_head_th);
-
-		$table_head_th=new htmlElement('th');
-		$table_head_th->set('text', "Timestamp");
-		$table_head_tr->inject($table_head_th);
-
-		$table_head->inject($table_head_tr);
-		$table->inject($table_head);
-
-		$table_body=new htmlElement('tbody');
-
-		foreach($log_list as $entry) {
-			$log_item=new htmlElement('tr');
-			$log_item_td = new htmlElement('td');
-			$log_item_td->set('text', $entry['user_email']);
-			$log_item->inject($log_item_td);
-			$log_item_td = new htmlElement('td');
-			$log_item_td->set('text', $entry['comment']);
-			$log_item->inject($log_item_td);
-			$log_item_td = new htmlElement('td');
-			$log_item_td->set('text', $entry['type']);
-			$log_item->inject($log_item_td);
-			$log_item_td = new htmlElement('td');
-			$log_item_td->set('text', $entry['status_set']);
-			$log_item->inject($log_item_td);
-			$log_item_td = new htmlElement('td');
-			$log_item_td->set('text', gmdate('Y-m-d H:i:s', $entry['timestamp']));
-
-			$log_item->inject($log_item_td);
-
-			$table_body->inject($log_item);
-		}
-		$table->inject($table_body);
-		return $table->Output();
-
-	}
-
 	private function addLog($publication_id,$status,$message,$type) {
 		global $USER;
 		global $DB;
