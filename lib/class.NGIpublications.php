@@ -641,6 +641,7 @@ class NGIpublications {
 			$accordion->addAccordion('Details',$detailed_content->output());
 
 			$details=new htmlElement('div');
+			$details->set('class','pub_details');
 			$details->set('text',$accordion->render());
 
 			$log_rows=sql_query("SELECT * FROM publications_logs JOIN publications ON publications_logs.publication_id=publications.id WHERE publication_id=".$publication['data']['id']);
@@ -652,13 +653,7 @@ class NGIpublications {
 				}
 			}
 
-			$log_table=$this->formatLog($log_list);
-
-			$log_accordion=new zurbAccordion(TRUE,TRUE);
-			$log_accordion->addAccordion('Log Details',$log_table);
-
-			$log_details=new htmlElement('div');
-			$log_details->set('text',$log_accordion->render());
+			$log_details=$this->formatLog($log_list);
 
 			$tools_verify=new htmlElement('span');
 			$tools_verify->set('class','tiny success button expanded verify_button');
@@ -780,7 +775,7 @@ class NGIpublications {
 		$table=new htmlElement('div');
 		$table->set('class','log');
 
-		foreach($log_list as $entry) {
+		foreach(array_reverse($log_list) as $entry) {
 			$log_div = new htmlElement('div');
 			$log_div->set('class', 'log_item '.$entry['type']);
 
@@ -803,7 +798,7 @@ class NGIpublications {
 						$log_status_icon->set('class', "fi-target");
 					break;
 					case 'maybe':
-						$log_status_icon->set('class', "fi-puzzle");
+						$log_status_icon->set('class', "fi-alert");
 					break;
 					case 'discarded':
 						$log_status_icon->set('class', "fi-prohibited");
@@ -828,26 +823,54 @@ class NGIpublications {
 				$log_div->inject($log_status_change);
 			}
 
-			if (($entry['type'] == 'comment') or (($entry['type'] == 'status_updated') and ($entry['comment'] != ''))) {
-				$log_header = new htmlElement('div');
+			if (in_array($entry['type'], ['comment', 'status_updated'])) {
 
-				$log_header->inject($log_user);
+				if($entry['type'] == 'comment'){
+					$log_header = new htmlElement('div');
+
+					$log_header->inject($log_user);
+					$log_header->inject($log_timestamp);
+
+					$log_div->inject($log_header);
+				}
+				if ($entry['comment'] != ''){
+					$log_comment=new htmlElement('div');
+					$log_comment->set('class', 'log_comment');
+					$log_comment->set('text', $entry['comment']);
+
+					$log_div->inject($log_comment);
+				}
+
+			}
+
+			if (in_array($entry['type'], ['added', 'reserved'])) {
+				$log_div->set('class', 'log_item status_update '.$entry['type']);
+
+				$log_header = new htmlElement('span');
+				$log_header->set('class', 'log_status_update');
+				$log_text = '';
+				if($entry['type'] == 'reserved') {
+					$log_text .= 'Reserved by '.$user_name;
+				}
+				$log_text .= $entry['comment'];
+
+				$log_header->set('text', $log_text);
+
 				$log_header->inject($log_timestamp);
 
 				$log_div->inject($log_header);
-
-				$log_comment=new htmlElement('span');
-				$log_comment->set('class', 'log_comment');
-				$log_comment->set('text', $entry['comment']);
-
-				$log_div->inject($log_comment);
-
 			}
+
+			// else {
+			// 	$log_header = new htmlElement('pre');
+			// 	$log_header->set('text', print_r($entry, true));
+			// 	$log_div->inject($log_header);
+			// }
 			$table->inject($log_div);
 		}
 
 
-		return $table->Output();
+		return $table;
 
 	}
 
