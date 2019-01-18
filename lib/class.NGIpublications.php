@@ -69,6 +69,7 @@ class NGIpublications {
 			$publication_id=$found['id'];
 			$parse_authors=$this->parseAuthors($found['id'],$lab_data);
 			$status='found';
+			$errors[]='';
 		} else {
 			// Add publication to database
 
@@ -248,7 +249,7 @@ class NGIpublications {
 						WHERE email='$email'");
 
 					while($paper=$papers->fetch_assoc()) {
-						if($paper['status']=='verified') {
+						if(	$paper['status']=='verified') {
 							$verified++;
 						} elseif($paper['status']=='discarded') {
 							$discarded++;
@@ -741,7 +742,7 @@ class NGIpublications {
 						foreach($authors as $author) {
 							// Check if authors match with any registered lab members
 							foreach($lab_data['query']['terms']['all'] as $email => $member) {
-								if($member==$author['name']) {
+								if($this->authorMatch($member,$author['name'])) {
 									$matched[]=array('publication_id' => $publication_id, 'researcher_name' => $member);
 									// We have a match, add this to xref table
 									// Add if link doesn't already exist
@@ -769,6 +770,24 @@ class NGIpublications {
 		}
 
 		return array('data' => array('total' => count($authors), 'matched' => $matched, 'added' => $added), 'errors' => $errors);
+	}
+
+	private function authorMatch($author1, $author2) {
+		if ($author1 == $author2) {
+			return true;
+		} elseif (explode(" ", $author1)[0] == explode(" ", $author2)[0]) {
+			/* Same last name */
+			/* Accepted if any initial is contained within the other */
+			$initials_1 = explode(" ", $author1)[1];
+			$initials_2 = explode(" ", $author2)[1];
+			if (strpos($initials_1, $initials_2) !== false) {
+				return true;
+			} elseif (strpos($initials_2, $initials_1) !== false) {
+				return true;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	private function formatLog($log_list) {
