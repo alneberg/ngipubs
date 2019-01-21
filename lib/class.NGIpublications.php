@@ -249,7 +249,7 @@ class NGIpublications {
 						WHERE email='$email'");
 
 					while($paper=$papers->fetch_assoc()) {
-						if(	$paper['status']=='verified') {
+						if($paper['status']=='verified') {
 							$verified++;
 						} elseif($paper['status']=='discarded') {
 							$discarded++;
