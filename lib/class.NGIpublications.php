@@ -773,11 +773,24 @@ class NGIpublications {
 	}
 
 	private function authorMatch($author1, $author2) {
+		/* A fuzzy comparison of author names. Can lead to false positives! */
+		$both_are_ascii = (mb_check_encoding($author1, 'ASCII') && mb_check_encoding($author2, 'ASCII'));
+
+		if ((!$both_are_ascii)) {
+			$author1 = $this->normalize($author1);
+			$author2 = $this->normalize($author2);
+		}
+
 		if ($author1 == $author2) {
 			return true;
-		} elseif (explode(" ", $author1)[0] == explode(" ", $author2)[0]) {
-			/* Same last name */
-			/* Accepted if any initial is contained within the other */
+		}
+
+		if (explode(" ", $author1)[0] == explode(" ", $author2)[0]) {
+			/* Last name matches, checks if any initial set is contained within
+			the other.
+
+			If this is too allowing, we should check that one initial
+			is the beginning of the other */
 			$initials_1 = explode(" ", $author1)[1];
 			$initials_2 = explode(" ", $author2)[1];
 			if (strpos($initials_1, $initials_2) !== false) {
@@ -788,6 +801,24 @@ class NGIpublications {
 		} else {
 			return false;
 		}
+	}
+
+	function normalize ($string) {
+		/* Stolen from php.net. Not fool-proof since there is no direct
+		translation between udf-8 and ascii */
+	    $table = array(
+			'Š'=>'S', 'š'=>'s', 'Đ'=>'Dj', 'đ'=>'dj', 'Ž'=>'Z', 'ž'=>'z', 'Č'=>'C', 'č'=>'c', 'Ć'=>'C', 'ć'=>'c',
+			'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C', 'È'=>'E', 'É'=>'E',
+			'Ê'=>'E', 'Ë'=>'E', 'Ì'=>'I', 'Í'=>'I', 'Î'=>'I', 'Ï'=>'I', 'Ñ'=>'N', 'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O',
+			'Õ'=>'O', 'Ö'=>'O', 'Ø'=>'O', 'Ù'=>'U', 'Ú'=>'U', 'Û'=>'U', 'Ü'=>'U', 'Ý'=>'Y', 'Þ'=>'B', 'ß'=>'Ss',
+			'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a', 'ä'=>'a', 'å'=>'a', 'æ'=>'a', 'ç'=>'c', 'è'=>'e', 'é'=>'e',
+			'ê'=>'e', 'ë'=>'e', 'ì'=>'i', 'í'=>'i', 'î'=>'i', 'ï'=>'i', 'ð'=>'o', 'ñ'=>'n', 'ò'=>'o', 'ó'=>'o',
+			'ô'=>'o', 'õ'=>'o', 'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'ý'=>'y', 'þ'=>'b',
+			'ÿ'=>'y', 'Ŕ'=>'R', 'ŕ'=>'r', 'ü'=>'u', 'ė'=>'e', 'ą'=>'a', 'ū'=>'u', 'Ł'=>'L', 'ś'=>'s', 'ł'=>'l',
+			'ş'=>'s', 'ń'=>'n', 'ğ'=>'g', 'ę'=>'e', '’'=>"'", 'ő'=>'o', 'ı'=>'l',
+	    );
+
+	    return strtr($string, $table);
 	}
 
 	private function formatLog($log_list) {
