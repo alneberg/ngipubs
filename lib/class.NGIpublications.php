@@ -476,6 +476,21 @@ class NGIpublications {
 		return array('list' => $output, 'pagination' => $pagination_string);
 	}
 
+	public function getAllAuthors() {
+		/* Added for debugging. Useful to check which characters are used for authors
+		in publications, so that the fuzzy matching can be maintained. */
+		$publication_rows=sql_query("SELECT publications.authors FROM publications");
+		$author_list=array();
+		while($publication_row=$publication_rows->fetch_assoc()) {
+			$authors=json_decode($publication_row['authors'],TRUE);
+			foreach($authors as $author) {
+				$author_list[]=$author['name'];
+			}
+		}
+		$all_authors_string = implode('', $author_list);
+		return $all_authors_string;
+	}
+
 	// Fetch additional metadata
 	private function publicationData($publication) {
 		$authors=json_decode($publication['authors'],TRUE);
